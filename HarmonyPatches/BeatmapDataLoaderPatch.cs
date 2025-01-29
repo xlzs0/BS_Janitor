@@ -81,7 +81,7 @@ namespace BS_Janitor.HarmonyPatches
 
         static bool Prefix(IBeatmapLevelData beatmapLevelData, BeatmapKey beatmapKey, ref Task<BeatmapDataBasicInfo> __result)
         {
-            if (!Config.Instance.Enabled)
+            if (!Config.Instance.Enabled || !Config.Instance.SpeedUpBasicDataLoading)
             {
                 return true;
             }
