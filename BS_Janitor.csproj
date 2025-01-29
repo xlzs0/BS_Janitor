@@ -44,6 +44,8 @@
     <Reference Include="IPA.Loader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll" SpecificVersion="False" Private="False" />
     <Reference Include="UnityEngine" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.dll" SpecificVersion="False" Private="False" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll" SpecificVersion="False" Private="False" />
+    <Reference Include="UnityEngine.UnityWebRequestModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestModule.dll" SpecificVersion="False" Private="False" />
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll" SpecificVersion="False" Private="False" />
     <Reference Include="Zenject" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll" SpecificVersion="False" Private="False" />
     <Reference Include="Zenject-usage" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll" SpecificVersion="False" Private="False" />
   </ItemGroup>
@@ -51,12 +53,10 @@
     <Compile Include="HarmonyPatches\*.cs" />
     <Compile Include="Installers\*.cs" />
     <Compile Include="UI\*.cs" />
-    <Compile Include="Utils\*.cs" />
     <Compile Include="*.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\*.bsml" />
-    <EmbeddedResource Include="Libs\*.dll" />
     <EmbeddedResource Include="manifest.json" />
   </ItemGroup>
   <ItemGroup>

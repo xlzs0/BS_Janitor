@@ -20,7 +20,6 @@
 using HarmonyLib;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using BS_Janitor.Utils;
 
 namespace BS_Janitor.HarmonyPatches
 {
@@ -45,22 +44,19 @@ namespace BS_Janitor.HarmonyPatches
                 return null;
             }
 
-            var result = BasicBeatmapDataParser.Parse(beatmapJson);
-            if (result == null)
+            BeatmapDataBasicInfo result = null;
+            var version = BeatmapSaveDataHelpers.GetVersion(beatmapJson);
+            if (version < BeatmapSaveDataHelpers.version3)
             {
-                var version = BeatmapSaveDataHelpers.GetVersion(beatmapJson);
-                if (version < BeatmapSaveDataHelpers.version3)
-                {
-                    result = await BeatmapDataLoaderVersion2_6_0AndEarlier.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(beatmapJson);
-                }
-                else if (version < BeatmapSaveDataHelpers.version4)
-                {
-                    result = await BeatmapDataLoaderVersion3.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(beatmapJson);
-                }
-                else
-                {
-                    result = await BeatmapDataLoaderVersion4.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(beatmapJson);
-                }
+                result = await BeatmapDataLoaderVersion2_6_0AndEarlier.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(beatmapJson);
+            }
+            else if (version < BeatmapSaveDataHelpers.version4)
+            {
+                result = await BeatmapDataLoaderVersion3.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(beatmapJson);
+            }
+            else
+            {
+                result = await BeatmapDataLoaderVersion4.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(beatmapJson);
             }
 
             if (result != null)
@@ -85,7 +81,7 @@ namespace BS_Janitor.HarmonyPatches
 
         static bool Prefix(IBeatmapLevelData beatmapLevelData, BeatmapKey beatmapKey, ref Task<BeatmapDataBasicInfo> __result)
         {
-            if (!Config.Instance.Enabled || !Config.Instance.SpeedUpBasicDataLoading)
+            if (!Config.Instance.Enabled)
             {
                 return true;
             }

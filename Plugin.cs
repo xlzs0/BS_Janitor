@@ -25,7 +25,6 @@ using System.Reflection;
 using SiraUtil.Zenject;
 using System;
 using BS_Janitor.Installers;
-using BS_Janitor.Utils;
 
 namespace BS_Janitor
 {
@@ -43,10 +42,9 @@ namespace BS_Janitor
             Instance = this;
             Logger = logger;
             Harmony = new("xlzs0.BS_Janitor");
-
+            
             Config.Instance = config.Generated<Config>();
             zenjector.Install<MenuInstaller>(Location.Menu);
-            NativeLibraryManager.LoadLibrary("bs_janitor.dll");
         }
 
         [OnEnable]
