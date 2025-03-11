@@ -3,9 +3,9 @@
   "id": "BS_Janitor",
   "name": "BS_Janitor",
   "author": "xlzs0",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "gameVersion": "1.39.0",
+  "gameVersion": "1.40.3",
   "dependsOn": {
     "BSIPA": "^4.2.0",
     "SongCore": "^3.14.13"

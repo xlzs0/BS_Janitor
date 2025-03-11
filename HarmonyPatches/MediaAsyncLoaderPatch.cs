@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright (C) 2025 xlzs0
  *
  *  This file is part of BS_Janitor.
@@ -22,8 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using System;
-using UnityEngine.Networking;
-using BGLib.UnityExtension;
+using BS_Janitor.Utils;
 
 namespace BS_Janitor.HarmonyPatches
 {
@@ -33,23 +32,21 @@ namespace BS_Janitor.HarmonyPatches
     {
         private static async Task<Sprite> LoadSpriteAsync(string path, CancellationToken cancellationToken)
         {
-            using UnityWebRequest www = UnityWebRequestTexture.GetTexture(FileHelpers.GetEscapedURLForFilePath(path));
-            if (await www.SendWebRequestAsync(cancellationToken) != UnityWebRequest.Result.Success)
+            var image = await Task.Run(() => ImageHelpers.LoadImage(path, maxSize: path.Contains("CustomLevels") ? (uint)Config.Instance.MaxCoverSize : 0));
+            if (image == null)
             {
-                return null;
+                return Sprite.Create(new Texture2D(1, 1), new Rect(0f, 0f, 1, 1), new Vector2(0.5f, 0.5f), 256f, 0u, SpriteMeshType.FullRect, new Vector4(0f, 0f, 0f, 0f), generateFallbackPhysicsShape: false);
             }
 
-            Texture2D content = DownloadHandlerTexture.GetContent(www);
-            content.hideFlags = HideFlags.DontSave;
-            Texture2D texture2D = new(content.width, content.height, content.format, mipChain: true, linear: false)
+            var texture = new Texture2D((int)image.Width, (int)image.Height, ImageHelpers.GetTextureFormat(image), mipChain: true)
             {
                 hideFlags = HideFlags.DontSave
             };
-            texture2D.LoadRawTextureData(content.GetRawTextureData<byte>());
-            texture2D.Apply(updateMipmaps: true, makeNoLongerReadable: true);
-            UnityEngine.Object.Destroy(content);
-            content = texture2D;
-            return Sprite.Create(content, new Rect(0f, 0f, content.width, content.height), new Vector2(0.5f, 0.5f), 256f, 0u, SpriteMeshType.FullRect, new Vector4(0f, 0f, 0f, 0f), generateFallbackPhysicsShape: false);
+
+            texture.SetPixelData(image.Data, 0);
+            texture.Apply(updateMipmaps: true, makeNoLongerReadable: true);
+
+            return Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 256f, 0u, SpriteMeshType.FullRect, new Vector4(0f, 0f, 0f, 0f), generateFallbackPhysicsShape: false);
         }
 
         static bool Prefix(string path, CancellationToken cancellationToken, ref Task<Sprite> __result)

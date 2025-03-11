@@ -2,6 +2,7 @@
 	<checkbox-setting apply-on-change="true" value="Enabled" text="Enable" />
 	<checkbox-setting apply-on-change="true" value="FixNoteStutters" text="Fix Note Stutters" />
 	<checkbox-setting apply-on-change="true" value="FasterSpriteLoading" text="Speed Up Sprite Loading" />
+	<slider-setting apply-on-change="true" value="MaxCoverSize" text="Cover Resolution Limit" integer-only="true" min="64" max="1024" increment="64" show-buttons="true" />
 	<checkbox-setting apply-on-change="true" value="SpeedUpBasicDataLoading" text="Speed Up Basic Data Loading" />
 	<checkbox-setting apply-on-change="true" value="OffloadAudioPreview" text="Load Audio Preview in Background" />
 	<checkbox-setting apply-on-change="true" value="FasterSearch" text="Speed Up Search" />
