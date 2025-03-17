@@ -10,11 +10,9 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Cl
     endif()
 endif()
 
-set(BS_JANITOR_SOURCE_DIR src)
-set(BS_JANITOR_INCLUDE_DIR include)
 set(BS_JANITOR_SOURCES
-    ${BS_JANITOR_SOURCE_DIR}/image.cc
-    ${BS_JANITOR_SOURCE_DIR}/parser.cc
+    src/image.cc
+    src/parser.cc
 )
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -24,7 +22,7 @@ else()
 endif()
 
 target_compile_features(bs_janitor PRIVATE cxx_std_23)
-target_include_directories(bs_janitor PUBLIC ${BS_JANITOR_INCLUDE_DIR})
+target_include_directories(bs_janitor PUBLIC include)
 
 include(FetchContent)
 

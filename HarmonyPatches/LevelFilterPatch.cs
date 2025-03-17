@@ -72,6 +72,11 @@ namespace BS_Janitor.HarmonyPatches
                 return true;
             }
 
+            for (var i = 0; i < searchTerms.Length; i++)
+            {
+                searchTerms[i] = searchTerms[i].ToLower();
+            }
+
             List<BeatmapLevel> filteredLevels = new(levels.Count);
             var buffer = ArrayPool<char>.Shared.Rent(256);
             try

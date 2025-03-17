@@ -1,29 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="BS_Janitor.csproj.user" Condition="Exists('BS_Janitor.csproj.user')" />
+    <None Include="*.csproj.user" Condition="Exists('*.csproj.user')" />
   </ItemGroup>
 
+  <ItemDefinitionGroup>
+    <Reference SpecificVersion="False" Private="false" />
+  </ItemDefinitionGroup>
+
   <ItemGroup>
-    <Reference Include="0Harmony" HintPath="$(BeatSaberDir)\Libs\0Harmony.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="BeatSaber.ViewSystem" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="BGLib.DotnetExtension" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.DotnetExtension.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="BGLib.UnityExtension" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.UnityExtension.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="BSML" HintPath="$(BeatSaberDir)\Plugins\BSML.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="DataModels" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll" SpecificVersion="False" Private="False" Publicize="True" />
-    <Reference Include="MediaLoader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\MediaLoader.dll" SpecificVersion="False" Private="False" Publicize="True" />
-    <Reference Include="SiraUtil" HintPath="$(BeatSaberDir)\Plugins\SiraUtil.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="Main" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll" SpecificVersion="False" Private="False" Publicize="True" />
-    <Reference Include="HMUI" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\HMUI.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="IPA.Loader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="UnityEngine" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="UnityEngine.CoreModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="Zenject" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll" SpecificVersion="False" Private="False" />
-    <Reference Include="Zenject-usage" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll" SpecificVersion="False" Private="False" />
+    <Reference Include="0Harmony" HintPath="$(BeatSaberDir)\Libs\0Harmony.dll" />
+    <Reference Include="BeatSaber.ViewSystem" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll" />
+    <Reference Include="BGLib.DotnetExtension" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.DotnetExtension.dll" />
+    <Reference Include="BGLib.UnityExtension" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.UnityExtension.dll" />
+    <Reference Include="BSML" HintPath="$(BeatSaberDir)\Plugins\BSML.dll" />
+    <Reference Include="DataModels" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll" Publicize="True" />
+    <Reference Include="MediaLoader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\MediaLoader.dll" Publicize="True" />
+    <Reference Include="SiraUtil" HintPath="$(BeatSaberDir)\Plugins\SiraUtil.dll" />
+    <Reference Include="Main" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll" Publicize="True" />
+    <Reference Include="HMUI" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\HMUI.dll" />
+    <Reference Include="IPA.Loader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll" />
+    <Reference Include="UnityEngine" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.dll" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll" />
+    <Reference Include="Zenject" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll" />
+    <Reference Include="Zenject-usage" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BeatSaberModdingTools.Tasks" Version="2.0.0-beta1" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" PrivateAssets="all" />
-    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" PrivateAssets="all" />
+    <PackageReference Include="BeatSaberModdingTools.Tasks" Version="2.0.0-beta1" />
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" />
   </ItemGroup>
 </Project>

@@ -48,14 +48,13 @@ namespace BS_Janitor.Utils
                     return null;
                 }
 
-                var image = new Image()
+                Image image = new()
                 {
                     Width = width,
                     Height = height,
                     Channels = channels,
+                    Data = new byte[width * height * channels]
                 };
-
-                image.Data = new byte[width * height * image.Channels];
                 Marshal.Copy(new IntPtr(ptr), image.Data, 0, image.Data.Length);
 
                 return image;
@@ -79,19 +78,10 @@ namespace BS_Janitor.Utils
             };
         }
 
-        internal static void FreeMemory()
-        {
-            mem_free_everything();
-        }
-
         [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.Bool)]
         private static unsafe extern byte* load_image([MarshalAs(UnmanagedType.LPWStr)] string path, ref UInt64 channels, ref UInt64 width, ref UInt64 height, UInt64 max_size);
 
         [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
         private static unsafe extern void mem_free(void* ptr);
-
-        [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void mem_free_everything();
     }
 }
