@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU"))
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -Wall -Wextra -Wpedantic -mbmi -mlzcnt -mpclmul")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -Wall -Wextra -Wpedantic")
 endif()
 
 set(BS_JANITOR_SOURCES
@@ -26,13 +26,16 @@ target_include_directories(bs_janitor PUBLIC include)
 include(FetchContent)
 
 FetchContent_Declare(
-    simdjson
-    GIT_REPOSITORY https://github.com/simdjson/simdjson.git
-    GIT_TAG v3.11.3
+    glaze
+    GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
 )
 
-FetchContent_MakeAvailable(simdjson)
+set(glaze_ENABLE_AVX2 ON)
 
-target_link_libraries(bs_janitor PRIVATE simdjson)
+FetchContent_MakeAvailable(glaze)
+
+target_link_libraries(bs_janitor PRIVATE glaze::glaze)
 
 add_custom_command(TARGET bs_janitor POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:bs_janitor>" "${CMAKE_SOURCE_DIR}/../")

@@ -45,6 +45,7 @@ namespace bs_janitor {
     };
 
     BS_JANITOR_EXPORT bool BS_JANITOR_CC parse_basic_data(const char* json, output* output);
+    BS_JANITOR_EXPORT bool BS_JANITOR_CC parse_basic_data_from_file(const wchar_t* path, output* output);
 
     BS_JANITOR_EXPORT uint8_t* BS_JANITOR_CC
     load_image(const wchar_t* path, uint64_t* channels, uint64_t* width, uint64_t* height, uint64_t max_size);

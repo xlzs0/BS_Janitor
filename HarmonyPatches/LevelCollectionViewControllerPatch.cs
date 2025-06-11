@@ -18,7 +18,6 @@
  */
 
 using HarmonyLib;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BS_Janitor.HarmonyPatches;
@@ -29,7 +28,7 @@ internal class LevelCollectionViewControllerPatch
     static bool Prefix(LevelCollectionViewController __instance, BeatmapLevel level)
     {
         __instance._crossfadeCancellationTokenSource?.Cancel();
-        __instance._crossfadeCancellationTokenSource = new CancellationTokenSource();
+        __instance._crossfadeCancellationTokenSource = new();
         Task.Run(() => __instance.SongPlayerCrossfadeToLevelAsync(level, __instance._crossfadeCancellationTokenSource.Token));
         return false;
     }

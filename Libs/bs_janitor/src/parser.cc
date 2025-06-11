@@ -19,134 +19,179 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
-#include <simdjson.h>
+#include <glaze/glaze.hpp>
 #pragma clang diagnostic pop
 
-#include "parser.hh"
 #include <bs_janitor/bs_janitor.h>
 
-namespace bs_janitor {
-    [[nodiscard]] static std::optional<beatmap_version> detect_version(simdjson::dom::element& beatmap) {
-        if (auto version_element = beatmap[constants::v3::version]; !version_element.error() && version_element.is_string()) {
-            auto version_string = version_element.get_string().value();
-            if (version_string.starts_with('4'))
-                return beatmap_version::v4;
+using namespace bs_janitor;
 
-            if (version_string.starts_with('3'))
-                return beatmap_version::v3;
-        }
+enum class beatmap_version { v2 = '2', v3 };
 
-        if (!beatmap[constants::v2::version].error())
-            return beatmap_version::v2;
+constexpr auto opts = glz::opts{ .error_on_unknown_keys = false, .error_on_missing_keys = false };
 
-        if (!beatmap[constants::v4::notes_data].error())
-            return beatmap_version::v4;
+[[nodiscard]] static std::optional<beatmap_version> detect_version(const std::string_view& json) {
+    constexpr auto version_str = "version\"";
+    constexpr auto version_len = sizeof("version\"");
 
-        if (!beatmap[constants::v3::notes].error())
-            return beatmap_version::v3;
+    const auto key_idx = json.find(version_str);
+    if (key_idx == std::string_view::npos)
+        return std::nullopt;
 
-        if (!beatmap[constants::v2::notes].error())
-            return beatmap_version::v2;
+    const auto val_idx = json.find("\"", key_idx + version_len);
+    if (val_idx == std::string_view::npos)
+        return std::nullopt;
 
+    const auto c = json[val_idx + 1];
+    if (c == '2' || c == '3')
+        return static_cast<beatmap_version>(c);
+
+    return std::nullopt;
+}
+
+static std::optional<std::string_view> load_file_to_view(const wchar_t* path, std::string& buf, size_t& capacity) noexcept {
+    std::FILE* fp = nullptr;
+    _wfopen_s(&fp, path, L"rb");
+
+    if (!fp)
+        return std::nullopt;
+
+    size_t len{};
+
+    if (std::fseek(fp, 0, SEEK_END) < 0 || (len = std::ftell(fp), len == static_cast<size_t>(-1))) {
+        std::fclose(fp);
         return std::nullopt;
     }
 
-    namespace static_objects {
-        static std::mutex mutex{};
-        static simdjson::dom::parser parser{};
-    } // namespace static_objects
+    if (capacity < len) {
+        buf.resize(static_cast<size_t>(static_cast<float>(len + 15) / 16) * 16);
+        capacity = buf.size();
+    }
 
-    BS_JANITOR_EXPORT bool BS_JANITOR_CC parse_basic_data(const char* json, bs_janitor::output* output) {
-        if (!output)
-            return false;
+    std::rewind(fp);
 
-        try {
-            std::lock_guard<std::mutex> lock(static_objects::mutex);
+    const auto bytes_read = std::fread(buf.data(), 1, len, fp);
+    if (std::fclose(fp) != 0 || bytes_read != len)
+        return std::nullopt;
 
-            simdjson::dom::element element = static_objects::parser.parse(json, std::strlen(json));
+    return std::string_view(buf.begin(), buf.begin() + len);
+}
 
-            auto version = detect_version(element);
-            if (!version.has_value())
-                return false;
+namespace v2 {
+    struct custom_data {
+        bool _fake;
+    };
 
-            uint64_t bombs{};
-            uint64_t cuttable_notes{};
-            uint64_t cuttable_objects{};
-            uint64_t obstacles{};
+    struct note {
+        uint8_t _type;
+        custom_data _customData;
+    };
 
-            switch (version.value()) {
-            case beatmap_version::v2: {
-                if (auto notes = element[constants::v2::notes]; !notes.error()) {
-                    auto notes_array = notes.get_array().take_value();
-                    cuttable_notes = notes_array.size();
+    struct obstacle {};
 
-                    for (auto item : notes_array) {
-                        if (auto custom_data = item[constants::v2::noodle::custom_data]; !custom_data.error()) [[unlikely]] {
-                            if (bool fake{}; !custom_data[constants::v2::noodle::fake_note].get(fake) && fake) [[unlikely]] {
-                                cuttable_notes--;
-                                continue;
-                            }
-                        }
+    struct beatmap {
+        std::vector<note> _notes;
+        std::vector<obstacle> _obstacles;
+    };
 
-                        int64_t type{};
-                        std::ignore = item[constants::v2::type].get(type);
-                        bombs += type == 3;
-                    }
+    static std::optional<bs_janitor::output> parse(std::string_view& json) {
+        bs_janitor::output output{};
 
-                    cuttable_notes -= bombs;
-                    cuttable_objects = cuttable_notes;
-                } else
-                    return false;
+        beatmap beatmap{};
+        if (glz::read<opts>(beatmap, json))
+            return std::nullopt;
 
-                if (auto walls = element[constants::v2::walls]; !walls.error()) {
-                    auto walls_array = walls.get_array().take_value();
-                    obstacles = walls_array.size();
-                } else
-                    return false;
-            } break;
-            case beatmap_version::v3: {
-                if (auto bombs_ = element[constants::v3::bombs]; !bombs_.error()) {
-                    auto bombs_array = bombs_.get_array().take_value();
-                    bombs = bombs_array.size();
-                } else
-                    return false;
+        output.cuttable_notes = beatmap._notes.size();
 
-                if (auto notes = element[constants::v3::notes]; !notes.error()) {
-                    auto notes_array = notes.get_array().take_value();
-                    cuttable_notes = notes_array.size();
-                    cuttable_objects = cuttable_notes;
-                } else
-                    return false;
-
-                if (auto burst_sliders = element[constants::v3::burst_sliders]; !burst_sliders.error()) {
-                    auto burst_sliders_array = burst_sliders.get_array().take_value();
-
-                    for (auto item : burst_sliders_array) {
-                        uint64_t cuttable_slices{};
-                        std::ignore = item[constants::v3::cuttable_slices].get(cuttable_slices);
-                        cuttable_objects += cuttable_slices;
-                    }
-                } else
-                    return false;
-
-                if (auto walls = element[constants::v3::walls]; !walls.error()) {
-                    auto walls_array = walls.get_array().take_value();
-                    obstacles = walls_array.size();
-                } else
-                    return false;
-            } break;
-            default:
-                return false;
+        for (const auto& note : beatmap._notes) {
+            if (note._customData._fake) [[unlikely]] {
+                output.cuttable_notes--;
+                continue;
             }
 
-            output->bombs = bombs;
-            output->cuttable_notes = cuttable_notes;
-            output->cuttable_objects = cuttable_objects;
-            output->obstacles = obstacles;
-
-            return true;
-        } catch (...) {
-            return false;
+            output.bombs += note._type == 3;
         }
+
+        output.cuttable_notes -= output.bombs;
+        output.cuttable_objects = output.cuttable_notes;
+        output.obstacles = beatmap._obstacles.size();
+
+        return output;
     }
-} // namespace bs_janitor
+} // namespace v2
+
+namespace v3 {
+    struct note {};
+    struct bomb {};
+    struct obstacle {};
+
+    struct burst_slider {
+        uint64_t sc;
+    };
+
+    struct beatmap {
+        std::vector<note> colorNotes;
+        std::vector<bomb> bombNotes;
+        std::vector<obstacle> obstacles;
+        std::vector<burst_slider> burstSliders;
+    };
+
+    static std::optional<bs_janitor::output> parse(std::string_view& json) {
+        bs_janitor::output output{};
+
+        beatmap beatmap{};
+        if (glz::read<opts>(beatmap, json))
+            return std::nullopt;
+
+        output.cuttable_notes = beatmap.colorNotes.size();
+        output.cuttable_objects = output.cuttable_notes;
+        output.bombs = beatmap.bombNotes.size();
+        output.obstacles = beatmap.obstacles.size();
+
+        auto total = 0;
+        for (const auto& slider : beatmap.burstSliders)
+            total += slider.sc;
+
+        output.cuttable_objects += total;
+
+        return output;
+    }
+} // namespace v3
+
+namespace static_objects {
+    static std::string buffer{};
+    static size_t buffer_capacity{};
+} // namespace static_objects
+
+static bool parse_basic_data_impl(std::string_view json, bs_janitor::output* output) {
+    if (!output)
+        return false;
+
+    try {
+        const auto version = detect_version(json);
+        if (!version.has_value())
+            return false;
+
+        auto out = version.value() == beatmap_version::v2 ? v2::parse(json) : v3::parse(json);
+        if (!out.has_value())
+            return false;
+
+        *output = out.value();
+
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
+BS_JANITOR_EXPORT bool BS_JANITOR_CC parse_basic_data(const char* json, bs_janitor::output* output) {
+    return parse_basic_data_impl(json, output);
+}
+
+BS_JANITOR_EXPORT bool BS_JANITOR_CC parse_basic_data_from_file(const wchar_t* path, bs_janitor::output* output) {
+    const auto json = load_file_to_view(path, static_objects::buffer, static_objects::buffer_capacity);
+    if (!json.has_value())
+        return false;
+
+    return parse_basic_data_impl(json.value(), output);
+}

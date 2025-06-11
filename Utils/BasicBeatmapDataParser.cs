@@ -40,11 +40,11 @@ internal static class BasicBeatmapDataParser
             return cached;
         }
 
-        BeatmapDataBasicInfo? result = ParseImpl(json);
+        BeatmapDataBasicInfo? result = ParseImpl(json, fromFile: false);
 
         if (result == null)
-        { 
-            var version = BeatmapSaveDataHelpers.GetVersion(json);            
+        {
+            var version = BeatmapSaveDataHelpers.GetVersion(json);
             if (version < BeatmapSaveDataHelpers.version3)
             {
                 result = await BeatmapDataLoaderVersion2_6_0AndEarlier.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(json);
@@ -63,11 +63,21 @@ internal static class BasicBeatmapDataParser
         return result;
     }
 
-    private static BeatmapDataBasicInfo? ParseImpl(string str)
+    public static BeatmapDataBasicInfo? ParseFromFile(string? path)
+    {
+        if (string.IsNullOrEmpty(path) || path.Contains("://") || !path.Contains("CustomLevels"))
+        {
+            return null;
+        }
+
+        return ParseImpl(path, fromFile: true);
+    }
+
+    private static BeatmapDataBasicInfo? ParseImpl(string str, bool fromFile = false)
     {
         Output output = new();
 
-        if (!parse_basic_data(str, ref output))
+        if (fromFile && !parse_basic_data_from_file(str, ref output) || !fromFile && !parse_basic_data(str, ref output))
         {
             return null;
         }
@@ -86,4 +96,7 @@ internal static class BasicBeatmapDataParser
 
     [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
     private static extern bool parse_basic_data([MarshalAs(UnmanagedType.LPStr)] string json, ref Output output);
+
+    [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool parse_basic_data_from_file([MarshalAs(UnmanagedType.LPWStr)] string path, ref Output output);
 }

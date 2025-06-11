@@ -2,10 +2,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="*.csproj.user" Condition="Exists('*.csproj.user')" />
+    <None Include="$(ProjectName).csproj.user" Condition="Exists('$(ProjectName).csproj.user')" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
