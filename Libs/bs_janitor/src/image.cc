@@ -22,8 +22,8 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
-#include "include/stb/stb_image.h"
-#include "include/stb/stb_image_resize2.h"
+#include "stb/stb_image.h"
+#include "stb/stb_image_resize2.h"
 #pragma clang diagnostic pop
 
 #include <bs_janitor/bs_janitor.h>

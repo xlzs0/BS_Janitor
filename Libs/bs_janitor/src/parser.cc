@@ -22,7 +22,7 @@
 #include <simdjson.h>
 #pragma clang diagnostic pop
 
-#include "include/parser.hh"
+#include "parser.hh"
 #include <bs_janitor/bs_janitor.h>
 
 namespace bs_janitor {
