@@ -21,7 +21,6 @@ using HarmonyLib;
 using IPA;
 using IPALogger = IPA.Logging.Logger;
 using System.Reflection;
-using System;
 using BS_Janitor.Utils;
 
 namespace BS_Janitor;
@@ -29,31 +28,27 @@ namespace BS_Janitor;
 [Plugin(RuntimeOptions.SingleStartInit)]
 public class Plugin
 {
-    internal static Plugin Instance { get; private set; }
-    internal static IPALogger Logger { get; private set; }
-    internal static Harmony Harmony { get; private set; }
-    internal static event Action OnDisabled;
+    internal static IPALogger? Logger { get; private set; }
+    internal static Harmony? Harmony { get; private set; }
 
     [Init]
     public Plugin(IPALogger logger)
     {
-        Instance = this;
         Logger = logger;
         Harmony = new("xlzs0.BS_Janitor");
-
-        NativeLibraryManager.LoadLibrary("bs_janitor.dll");
     }
 
     [OnEnable]
     public void OnEnable()
     {
-        Harmony.PatchAll(Assembly.GetExecutingAssembly());
+        NativeLibraryManager.LoadLibrary("bs_janitor.dll");
+        Harmony?.PatchAll(Assembly.GetExecutingAssembly());
     }
 
     [OnDisable]
     public void OnDisable()
     {
-        Harmony.UnpatchSelf();
-        OnDisabled?.Invoke();
+        Harmony?.UnpatchSelf();
+        NativeLibraryManager.FreeAllLibraries();
     }
 }

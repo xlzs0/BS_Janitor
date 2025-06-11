@@ -18,7 +18,7 @@
  */
 
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -27,31 +27,28 @@ namespace BS_Janitor.Utils;
 
 internal static class NativeLibraryManager
 {
-    private static readonly ConcurrentDictionary<string, IntPtr> _loadedLibraries = new();
+    private static readonly Dictionary<string, IntPtr> _loadedLibraries = [];
     private const string _libsDirectory = "Libs";
     private const string _embeddedPrefix = "BS_Janitor.Libs.";
 
     public static bool LoadLibrary(string libraryName)
     {
-        Plugin.OnDisabled -= FreeAllLibraries;
-        Plugin.OnDisabled += FreeAllLibraries;
-
-        var libraryPath = Path.Combine(_libsDirectory, libraryName);
-
-        if (_loadedLibraries.ContainsKey(libraryPath))
+        if (_loadedLibraries.ContainsKey(libraryName))
         {
             return true;
         }
 
-        var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream(_embeddedPrefix + libraryName);
-        if (stream == null)
+        var libraryPath = Path.Combine(_libsDirectory, libraryName);
+        try
+        {
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(_embeddedPrefix + libraryName);
+            using var fileStream = File.Create(libraryPath);
+            stream.CopyTo(fileStream);
+        }
+        catch
         {
             return false;
         }
-
-        using var fileStream = File.Create(libraryPath);
-        stream.CopyTo(fileStream);
 
         var handle = LoadLibraryA(libraryPath);
         if (handle == IntPtr.Zero)
@@ -59,18 +56,15 @@ internal static class NativeLibraryManager
             return false;
         }
 
-        _loadedLibraries.TryAdd(libraryPath, handle);
+        _loadedLibraries.TryAdd(libraryName, handle);
         return true;
     }
 
     public static void FreeAllLibraries()
     {
-        foreach (var pair in _loadedLibraries)
+        foreach (var (_, handle) in _loadedLibraries)
         {
-            if (pair.Value != IntPtr.Zero)
-            {
-                FreeLibrary(pair.Value);
-            }
+            FreeLibrary(handle);
         }
 
         _loadedLibraries.Clear();

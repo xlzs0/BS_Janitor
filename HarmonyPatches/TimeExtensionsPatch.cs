@@ -34,7 +34,7 @@ internal class TimeExtensionsPatch
         var hours = duration.Hours();
         if (hours > 0)
         {
-            __result = $"{hours}:{duration.Minutes():00}:{$"{duration.Seconds():00}"}";
+            __result = $"{hours}:{duration.Minutes():00}:{duration.Seconds():00}";
             return false;
         }
 
