@@ -23,7 +23,7 @@
 #include <cstdint>
 
 #ifndef BS_JANITOR_CC
-#if defined(_WIN32) || defined(_MSC_VER)
+#if defined(_MSC_VER)
 #define BS_JANITOR_CC __cdecl
 #elif defined(__clang__) || defined(__GNUC__)
 #define BS_JANITOR_CC __attribute__((cdecl))
@@ -33,43 +33,23 @@
 #endif
 
 #ifndef BS_JANITOR_EXPORT
-#ifdef _WIN32
 #define BS_JANITOR_EXPORT extern "C" __declspec(dllexport)
-#else
-#define BS_JANITOR_EXPORT
-#endif
 #endif
 
-#if !defined(__cplusplus) && !defined(bool)
-#include <stdbool.h>
-#endif
-
-#ifdef __cplusplus
 namespace bs_janitor {
-#endif
-    typedef struct output {
+    struct output {
         uint64_t cuttable_notes;
         uint64_t cuttable_objects;
         uint64_t obstacles;
         uint64_t bombs;
-    } output;
+    };
 
     BS_JANITOR_EXPORT bool BS_JANITOR_CC parse_basic_data(const char* json, output* output);
 
-    BS_JANITOR_EXPORT uint8_t* BS_JANITOR_CC load_image(
-#ifdef _WIN32
-        const wchar_t* path,
-#else
-    const char* path,
-#endif
-        uint64_t* channels,
-        uint64_t* width,
-        uint64_t* height,
-        uint64_t max_size);
+    BS_JANITOR_EXPORT uint8_t* BS_JANITOR_CC
+    load_image(const wchar_t* path, uint64_t* channels, uint64_t* width, uint64_t* height, uint64_t max_size);
 
     BS_JANITOR_EXPORT void BS_JANITOR_CC mem_free(void* ptr);
-#ifdef __cplusplus
 } // namespace bs_janitor
-#endif
 
 #endif

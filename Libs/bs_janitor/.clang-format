@@ -24,7 +24,7 @@ IncludeBlocks: Preserve
 NamespaceIndentation: All
 PointerAlignment: Left
 AlignTrailingComments: true
-AlignEscapedNewlinesLeft: true
+AlignEscapedNewlines: Left
 AlwaysBreakTemplateDeclarations: true
 BinPackArguments: false
 BinPackParameters: false

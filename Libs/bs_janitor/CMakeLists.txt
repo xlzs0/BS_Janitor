@@ -2,12 +2,11 @@ cmake_minimum_required(VERSION 3.14)
 
 project(bs_janitor VERSION 1.0.0)
 
-if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU"))
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror -march=x86-64-v3 -mpclmul")
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-    if(NOT WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-    endif()
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU"))
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -Wall -Wextra -Wpedantic -mbmi -mlzcnt -mpclmul")
 endif()
 
 set(BS_JANITOR_SOURCES
@@ -36,9 +35,4 @@ FetchContent_MakeAvailable(simdjson)
 
 target_link_libraries(bs_janitor PRIVATE simdjson)
 
-add_custom_command(
-    TARGET bs_janitor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        "$<TARGET_FILE:bs_janitor>"
-        "${CMAKE_SOURCE_DIR}/../"
-)
+add_custom_command(TARGET bs_janitor POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:bs_janitor>" "${CMAKE_SOURCE_DIR}/../")

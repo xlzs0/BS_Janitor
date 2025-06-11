@@ -65,7 +65,7 @@ namespace bs_janitor {
             }
             break;
         case 3:
-            for (auto i = 0ull; i < num_pixels; ++i) {
+            for (auto i = 0ull; i < num_pixels; i++) {
                 out[0] = *in++;
                 out[1] = *in++;
                 out[2] = *in++;
@@ -81,25 +81,14 @@ namespace bs_janitor {
         channels = target_channels;
     }
 
-    BS_JANITOR_EXPORT uint8_t* BS_JANITOR_CC load_image(
-#ifdef _WIN32
-        const wchar_t* path,
-#else
-        const char* path,
-#endif
-        uint64_t* channels,
-        uint64_t* width,
-        uint64_t* height,
-        uint64_t max_size) {
+    BS_JANITOR_EXPORT uint8_t* BS_JANITOR_CC
+    load_image(const wchar_t* path, uint64_t* channels, uint64_t* width, uint64_t* height, uint64_t max_size) {
         if (!channels || !width || !height)
             return nullptr;
 
         FILE* fp = nullptr;
-#ifdef _WIN32
         _wfopen_s(&fp, path, L"rb");
-#else
-        fp = fopen(path, "rb");
-#endif
+
         if (!fp)
             return nullptr;
 
