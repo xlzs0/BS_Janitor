@@ -19,13 +19,14 @@
 
 using HarmonyLib;
 using System;
+using System.Threading.Tasks;
 
 namespace BS_Janitor.HarmonyPatches;
 
 [HarmonyPatch(typeof(BeatmapSaveDataHelpers), nameof(BeatmapSaveDataHelpers.GetVersion))]
 internal class BeatmapSaveDataHelpersPatch
 {
-    static bool Prefix(ref string data, ref Version __result)
+    internal static bool Prefix(ref string data, ref Version __result)
     {
         try
         {
@@ -47,6 +48,17 @@ internal class BeatmapSaveDataHelpersPatch
         }
 
         __result = BeatmapSaveDataHelpers.noVersion;
+        return false;
+    }
+}
+
+
+[HarmonyPatch(typeof(BeatmapSaveDataHelpers), nameof(BeatmapSaveDataHelpers.GetVersionAsync))]
+internal class BeatmapSaveDataHelpersNoAsyncPatch
+{
+    internal static bool Prefix(ref string data, ref Task<Version> __result)
+    {
+        __result = Task.FromResult(BeatmapSaveDataHelpers.GetVersion(data));
         return false;
     }
 }

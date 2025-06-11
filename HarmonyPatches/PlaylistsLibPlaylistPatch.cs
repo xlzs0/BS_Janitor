@@ -17,19 +17,30 @@
  *  along with BS_Janitor.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using BeatSaberPlaylistsLib;
+using BeatSaberPlaylistsLib.Types;
 using HarmonyLib;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace BS_Janitor.HarmonyPatches;
 
-[HarmonyPatch(typeof(LevelCollectionViewController), nameof(LevelCollectionViewController.SongPlayerCrossfadeToLevel))]
-internal class LevelCollectionViewControllerPatch
+[HarmonyPatch(typeof(Playlist), "QueueLoadSprite")]
+internal class PlaylistsLibPlaylistPatch
 {
-    internal static bool Prefix(LevelCollectionViewController __instance, BeatmapLevel level)
+    private static async Task QueueLoadSprite(Playlist playlist)
     {
-        __instance._crossfadeCancellationTokenSource?.Cancel();
-        __instance._crossfadeCancellationTokenSource = new();
-        Task.Run(() => __instance.SongPlayerCrossfadeToLevelAsync(level, __instance._crossfadeCancellationTokenSource.Token));
+        using var stream = playlist.HasCover ? playlist.GetCoverStream() : null;
+        using var downscaleStream = stream != null && stream != Stream.Null ? await Task.Run(() => Utilities.DownscaleImage(stream, 128)) : stream;
+        var sprite = Utilities.GetSpriteFromStream(downscaleStream ?? Stream.Null);
+        playlist._sprite = sprite;
+        playlist._smallSprite = sprite;
+        Playlist.OnSpriteLoaded(playlist);
+    }
+
+    internal static bool Prefix(Playlist playlist)
+    {
+        _ = QueueLoadSprite(playlist);
         return false;
     }
 }

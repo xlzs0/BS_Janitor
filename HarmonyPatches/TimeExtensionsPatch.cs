@@ -24,7 +24,7 @@ namespace BS_Janitor.HarmonyPatches;
 [HarmonyPatch(typeof(TimeExtensions), nameof(TimeExtensions.MinSecDurationText))]
 internal class TimeExtensionsPatch
 {
-    static bool Prefix(float duration, ref string __result)
+    internal static bool Prefix(float duration, ref string __result)
     {
         if (!float.IsFinite(duration) || float.IsNaN(duration))
         {

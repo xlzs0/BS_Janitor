@@ -26,8 +26,5 @@ namespace BS_Janitor.HarmonyPatches;
 [HarmonyPatch(typeof(AudioTimeSyncController), nameof(AudioTimeSyncController.Awake))]
 internal class AudioTimeSyncControllerPatch
 {
-    static void Prefix(AudioTimeSyncController __instance)
-    {
-        __instance._forcedSyncDeltaTime = 0.25f;
-    }
+    internal static void Prefix(AudioTimeSyncController __instance) => __instance._forcedSyncDeltaTime = 0.25f;
 }
