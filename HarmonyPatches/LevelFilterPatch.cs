@@ -67,11 +67,6 @@ internal class LevelFilterPatch
 
     static bool Prefix(List<BeatmapLevel> levels, string[] searchTerms, ref List<BeatmapLevel> __result)
     {
-        if (!Config.Instance.Enabled || !Config.Instance.FasterSearch)
-        {
-            return true;
-        }
-
         for (var i = 0; i < searchTerms.Length; i++)
         {
             searchTerms[i] = searchTerms[i].ToLower();

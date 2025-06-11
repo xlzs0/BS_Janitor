@@ -20,7 +20,6 @@
     <Reference Include="BSML" HintPath="$(BeatSaberDir)\Plugins\BSML.dll" />
     <Reference Include="DataModels" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll" Publicize="True" />
     <Reference Include="MediaLoader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\MediaLoader.dll" Publicize="True" />
-    <Reference Include="SiraUtil" HintPath="$(BeatSaberDir)\Plugins\SiraUtil.dll" />
     <Reference Include="Main" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll" Publicize="True" />
     <Reference Include="HMUI" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\HMUI.dll" />
     <Reference Include="IPA.Loader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll" />
@@ -31,7 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\*.bsml" />
     <EmbeddedResource Include="Libs\*.dll" />
     <EmbeddedResource Include="manifest.json" />
   </ItemGroup>

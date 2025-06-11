@@ -19,12 +19,9 @@
 
 using HarmonyLib;
 using IPA;
-using IPA.Config.Stores;
 using IPALogger = IPA.Logging.Logger;
 using System.Reflection;
-using SiraUtil.Zenject;
 using System;
-using BS_Janitor.Installers;
 using BS_Janitor.Utils;
 
 namespace BS_Janitor;
@@ -38,14 +35,11 @@ public class Plugin
     internal static event Action OnDisabled;
 
     [Init]
-    public Plugin(IPALogger logger, IPA.Config.Config config, Zenjector zenjector)
+    public Plugin(IPALogger logger)
     {
         Instance = this;
         Logger = logger;
         Harmony = new("xlzs0.BS_Janitor");
-
-        Config.Instance = config.Generated<Config>();
-        zenjector.Install<MenuInstaller>(Location.Menu);
 
         NativeLibraryManager.LoadLibrary("bs_janitor.dll");
     }

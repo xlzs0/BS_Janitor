@@ -32,7 +32,7 @@ internal class MediaAsyncLoaderPatch
 {
     private static async Task<Sprite> LoadSpriteAsync(string path, CancellationToken cancellationToken)
     {
-        var image = await Task.Run(() => ImageHelpers.LoadImage(path, maxSize: path.Contains("CustomLevels") ? (uint)Config.Instance.MaxCoverSize : 0));
+        var image = await Task.Run(() => ImageHelpers.LoadImage(path, maxSize: path.Contains("CustomLevels") ? 512u : 0));
         if (image == null)
         {
             return Sprite.Create(new Texture2D(1, 1), new Rect(0f, 0f, 1, 1), new Vector2(0.5f, 0.5f), 256f, 0u, SpriteMeshType.FullRect, new Vector4(0f, 0f, 0f, 0f), generateFallbackPhysicsShape: false);
@@ -51,7 +51,7 @@ internal class MediaAsyncLoaderPatch
 
     static bool Prefix(string path, CancellationToken cancellationToken, ref Task<Sprite> __result)
     {
-        if (!Config.Instance.Enabled || !Config.Instance.FasterSpriteLoading || FileHelpers.PathIsUrl(path))
+        if (FileHelpers.PathIsUrl(path))
         {
             return true;
         }

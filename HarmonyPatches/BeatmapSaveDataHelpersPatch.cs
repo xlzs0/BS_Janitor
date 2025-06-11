@@ -27,11 +27,6 @@ internal class BeatmapSaveDataHelpersPatch
 {
     static bool Prefix(ref string data, ref Version __result)
     {
-        if (!Config.Instance.Enabled || !Config.Instance.SpeedUpBasicDataLoading)
-        {
-            return true;
-        }
-
         try
         {
             var span = data.AsSpan();

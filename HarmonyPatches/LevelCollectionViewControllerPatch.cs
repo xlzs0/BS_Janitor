@@ -28,11 +28,6 @@ internal class LevelCollectionViewControllerPatch
 {
     static bool Prefix(LevelCollectionViewController __instance, BeatmapLevel level)
     {
-        if (!Config.Instance.Enabled || !Config.Instance.OffloadAudioPreview)
-        {
-            return true;
-        }
-
         __instance._crossfadeCancellationTokenSource?.Cancel();
         __instance._crossfadeCancellationTokenSource = new CancellationTokenSource();
         Task.Run(() => __instance.SongPlayerCrossfadeToLevelAsync(level, __instance._crossfadeCancellationTokenSource.Token));

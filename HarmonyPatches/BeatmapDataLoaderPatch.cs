@@ -85,11 +85,6 @@ internal class BeatmapDataLoaderPatch
 
     static bool Prefix(IBeatmapLevelData beatmapLevelData, BeatmapKey beatmapKey, ref Task<BeatmapDataBasicInfo> __result)
     {
-        if (!Config.Instance.Enabled || !Config.Instance.SpeedUpBasicDataLoading)
-        {
-            return true;
-        }
-
         __result = Task.Run(() => LoadBeatmapBasicInfo(beatmapLevelData, beatmapKey));
         return false;
     }

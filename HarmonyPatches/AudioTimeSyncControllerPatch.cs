@@ -28,6 +28,6 @@ internal class AudioTimeSyncControllerPatch
 {
     static void Prefix(AudioTimeSyncController __instance)
     {
-        __instance._forcedSyncDeltaTime = Config.Instance.Enabled && Config.Instance.FixNoteStutters ? 0.25f : 0.03f;
+        __instance._forcedSyncDeltaTime = 0.25f;
     }
 }
