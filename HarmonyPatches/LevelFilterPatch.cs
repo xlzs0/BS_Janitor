@@ -18,32 +18,17 @@
  */
 
 using HarmonyLib;
-using System.Collections.Generic;
 using System;
 using System.Buffers;
-using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BS_Janitor.HarmonyPatches;
 
 [HarmonyPatch(typeof(LevelFilter), nameof(LevelFilter.FilterLevelByText))]
 internal class LevelFilterPatch
 {
-    static int GetTotalLength(BeatmapLevel level)
-    {
-        var length = 0;
-        length += (level.songName?.Length ?? 0) + 1;
-        length += (level.songSubName?.Length ?? 0) + 1;
-        length += (level.songAuthorName?.Length ?? 0) + 1;
-
-        foreach (var mapper in level.allMappers)
-        {
-            length += (mapper?.Length ?? 0) + 1;
-        }
-
-        return length;
-    }
-
-    static void CopyLower(string source, char[] buffer, ref int position)
+    private static void CopyLower(string source, char[] buffer, ref int position)
     {
         if (string.IsNullOrEmpty(source))
         {
@@ -58,33 +43,22 @@ internal class LevelFilterPatch
                 c = (char)(c | 0x20u);
             }
 
-            buffer[position + i] = c;
+            buffer[position++] = c;
         }
-
-        buffer[position + source.Length] = ' ';
-        position += source.Length + 1;
     }
 
-    static bool Prefix(List<BeatmapLevel> levels, string[] searchTerms, ref List<BeatmapLevel> __result)
+    internal static bool Prefix(List<BeatmapLevel> levels, string[] searchTerms, ref List<BeatmapLevel> __result)
     {
         for (var i = 0; i < searchTerms.Length; i++)
         {
             searchTerms[i] = searchTerms[i].ToLower();
         }
-
-        List<BeatmapLevel> filteredLevels = new(levels.Count);
-        var buffer = ArrayPool<char>.Shared.Rent(256);
+        
+        var buffer = ArrayPool<char>.Shared.Rent(levels.Max(level => level.songName.Length + level.songSubName.Length + level.songAuthorName.Length + level.allMappers.Sum(mapper => mapper.Length) + 1));
         try
         {
-            foreach (BeatmapLevel level in levels)
+            __result = levels.Where(level =>
             {
-                var totalLength = GetTotalLength(level);
-                if (buffer.Length < totalLength)
-                {
-                    ArrayPool<char>.Shared.Return(buffer);
-                    buffer = ArrayPool<char>.Shared.Rent((int)Mathf.Floor((totalLength + 31) / 32) * 32);
-                }
-
                 var pos = 0;
                 CopyLower(level.songName, buffer, ref pos);
                 CopyLower(level.songSubName, buffer, ref pos);
@@ -94,28 +68,22 @@ internal class LevelFilterPatch
                     CopyLower(mapper, buffer, ref pos);
 
                 var searchSpan = buffer.AsSpan(0, pos);
-                bool match = true;
                 foreach (var term in searchTerms)
                 {
                     if (searchSpan.IndexOf(term.AsSpan()) < 0)
                     {
-                        match = false;
-                        break;
+                        return false;
                     }
                 }
 
-                if (match)
-                {
-                    filteredLevels.Add(level);
-                }
-            }
+                return true;
+            }).ToList();
         }
         finally
         {
             ArrayPool<char>.Shared.Return(buffer);
         }
 
-        __result = filteredLevels;
         return false;
     }
 }
