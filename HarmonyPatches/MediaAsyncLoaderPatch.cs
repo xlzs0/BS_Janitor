@@ -17,46 +17,31 @@
  *  along with BS_Janitor.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using BS_Janitor.Utils;
 using HarmonyLib;
-using System.Threading;
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
-using System;
-using BS_Janitor.Utils;
 
 namespace BS_Janitor.HarmonyPatches;
 
-[HarmonyPriority(Int32.MaxValue)]
-[HarmonyPatch(typeof(MediaAsyncLoader), nameof(MediaAsyncLoader.LoadSpriteAsync))]
+[HarmonyPatch(typeof(MediaAsyncLoader), nameof(MediaAsyncLoader.LoadSpriteAsync)), HarmonyPriority(Int32.MaxValue)]
 internal class MediaAsyncLoaderPatch
 {
-    private static async Task<Sprite> LoadSpriteAsync(string path, CancellationToken cancellationToken)
+    private static async Task<Sprite> LoadSpriteAsync(string path)
     {
-        var image = await Task.Run(() => ImageHelpers.LoadImage(path, maxSize: path.Contains("CustomLevels") ? 512u : 0));
-        if (image == null)
-        {
-            return Sprite.Create(new Texture2D(1, 1), new Rect(0f, 0f, 1, 1), new Vector2(0.5f, 0.5f), 256f, 0u, SpriteMeshType.FullRect, new Vector4(0f, 0f, 0f, 0f), generateFallbackPhysicsShape: false);
-        }
-
-        var texture = new Texture2D((int)image.Width, (int)image.Height, ImageHelpers.GetTextureFormat(image), mipChain: true)
-        {
-            hideFlags = HideFlags.DontSave
-        };
-
-        texture.SetPixelData(image.Data, 0);
-        texture.Apply(updateMipmaps: true, makeNoLongerReadable: true);
-
-        return Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 256f, 0u, SpriteMeshType.FullRect, new Vector4(0f, 0f, 0f, 0f), generateFallbackPhysicsShape: false);
+        var texture = await ImageLoader.Load(path, maxSize: path.Contains("CustomLevels") ? 512u : 0u);
+        return Sprite.Create(texture, new(0, 0, texture.width, texture.height), new(0.5f, 0.5f), 256, 0u, SpriteMeshType.FullRect, new(0, 0, 0, 0), generateFallbackPhysicsShape: false);
     }
 
-    static bool Prefix(string path, CancellationToken cancellationToken, ref Task<Sprite> __result)
+    internal static bool Prefix(string path, ref Task<Sprite> __result)
     {
-        if (FileHelpers.PathIsUrl(path))
+        if (path.Contains("://"))
         {
             return true;
         }
 
-        __result = LoadSpriteAsync(path, cancellationToken);
+        __result = LoadSpriteAsync(path);
         return false;
     }
 }
