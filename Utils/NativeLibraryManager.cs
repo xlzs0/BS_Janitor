@@ -23,63 +23,62 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace BS_Janitor.Utils
+namespace BS_Janitor.Utils;
+
+internal static class NativeLibraryManager
 {
-    internal static class NativeLibraryManager
+    private static readonly ConcurrentDictionary<string, IntPtr> _loadedLibraries = new();
+    private const string _libsDirectory = "Libs";
+    private const string _embeddedPrefix = "BS_Janitor.Libs.";
+
+    public static bool LoadLibrary(string libraryName)
     {
-        private static readonly ConcurrentDictionary<string, IntPtr> _loadedLibraries = new();
-        private const string _libsDirectory = "Libs";
-        private const string _embeddedPrefix = "BS_Janitor.Libs.";
+        Plugin.OnDisabled -= FreeAllLibraries;
+        Plugin.OnDisabled += FreeAllLibraries;
 
-        public static bool LoadLibrary(string libraryName)
+        var libraryPath = Path.Combine(_libsDirectory, libraryName);
+
+        if (_loadedLibraries.ContainsKey(libraryPath))
         {
-            Plugin.OnDisabled -= FreeAllLibraries;
-            Plugin.OnDisabled += FreeAllLibraries;
-
-            var libraryPath = Path.Combine(_libsDirectory, libraryName);
-
-            if (_loadedLibraries.ContainsKey(libraryPath))
-            {
-                return true;
-            }
-
-            var assembly = Assembly.GetExecutingAssembly();
-            using var stream = assembly.GetManifestResourceStream(_embeddedPrefix + libraryName);
-            if (stream == null)
-            {
-                return false;
-            }
-
-            using var fileStream = File.Create(libraryPath);
-            stream.CopyTo(fileStream);
-
-            var handle = LoadLibraryA(libraryPath);
-            if (handle == IntPtr.Zero)
-            {
-                return false;
-            }
-
-            _loadedLibraries.TryAdd(libraryPath, handle);
             return true;
         }
 
-        public static void FreeAllLibraries()
+        var assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream(_embeddedPrefix + libraryName);
+        if (stream == null)
         {
-            foreach (var pair in _loadedLibraries)
-            {
-                if (pair.Value != IntPtr.Zero)
-                {
-                    FreeLibrary(pair.Value);
-                }
-            }
-
-            _loadedLibraries.Clear();
+            return false;
         }
 
-        [DllImport("kernel32.dll")]
-        internal static extern IntPtr LoadLibraryA(string lpLibFileName);
+        using var fileStream = File.Create(libraryPath);
+        stream.CopyTo(fileStream);
 
-        [DllImport("kernel32.dll")]
-        internal static extern bool FreeLibrary(IntPtr hLibModule);
+        var handle = LoadLibraryA(libraryPath);
+        if (handle == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        _loadedLibraries.TryAdd(libraryPath, handle);
+        return true;
     }
+
+    public static void FreeAllLibraries()
+    {
+        foreach (var pair in _loadedLibraries)
+        {
+            if (pair.Value != IntPtr.Zero)
+            {
+                FreeLibrary(pair.Value);
+            }
+        }
+
+        _loadedLibraries.Clear();
+    }
+
+    [DllImport("kernel32.dll")]
+    internal static extern IntPtr LoadLibraryA(string lpLibFileName);
+
+    [DllImport("kernel32.dll")]
+    internal static extern bool FreeLibrary(IntPtr hLibModule);
 }

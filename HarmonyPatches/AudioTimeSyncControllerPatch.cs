@@ -20,15 +20,14 @@
 using HarmonyLib;
 using System;
 
-namespace BS_Janitor.HarmonyPatches
+namespace BS_Janitor.HarmonyPatches;
+
+[HarmonyPriority(Int32.MinValue)]
+[HarmonyPatch(typeof(AudioTimeSyncController), nameof(AudioTimeSyncController.Awake))]
+internal class AudioTimeSyncControllerPatch
 {
-    [HarmonyPriority(Int32.MinValue)]
-    [HarmonyPatch(typeof(AudioTimeSyncController), nameof(AudioTimeSyncController.Awake))]
-    internal class AudioTimeSyncControllerPatch
+    static void Prefix(AudioTimeSyncController __instance)
     {
-        static void Prefix(AudioTimeSyncController __instance)
-        {
-            __instance._forcedSyncDeltaTime = Config.Instance.Enabled && Config.Instance.FixNoteStutters ? 0.25f : 0.03f;
-        }
+        __instance._forcedSyncDeltaTime = Config.Instance.Enabled && Config.Instance.FixNoteStutters ? 0.25f : 0.03f;
     }
 }

@@ -23,105 +23,104 @@ using System;
 using System.Buffers;
 using UnityEngine;
 
-namespace BS_Janitor.HarmonyPatches
+namespace BS_Janitor.HarmonyPatches;
+
+[HarmonyPatch(typeof(LevelFilter), nameof(LevelFilter.FilterLevelByText))]
+internal class LevelFilterPatch
 {
-    [HarmonyPatch(typeof(LevelFilter), nameof(LevelFilter.FilterLevelByText))]
-    internal class LevelFilterPatch
+    static int GetTotalLength(BeatmapLevel level)
     {
-        static int GetTotalLength(BeatmapLevel level)
+        var length = 0;
+        length += (level.songName?.Length ?? 0) + 1;
+        length += (level.songSubName?.Length ?? 0) + 1;
+        length += (level.songAuthorName?.Length ?? 0) + 1;
+
+        foreach (var mapper in level.allMappers)
         {
-            var length = 0;
-            length += (level.songName?.Length ?? 0) + 1;
-            length += (level.songSubName?.Length ?? 0) + 1;
-            length += (level.songAuthorName?.Length ?? 0) + 1;
-
-            foreach (var mapper in level.allMappers)
-            {
-                length += (mapper?.Length ?? 0) + 1;
-            }
-
-            return length;
+            length += (mapper?.Length ?? 0) + 1;
         }
 
-        static void CopyLower(string source, char[] buffer, ref int position)
+        return length;
+    }
+
+    static void CopyLower(string source, char[] buffer, ref int position)
+    {
+        if (string.IsNullOrEmpty(source))
         {
-            if (string.IsNullOrEmpty(source))
+            return;
+        }
+
+        for (var i = 0; i < source.Length; i++)
+        {
+            var c = source[i];
+            if ('A' <= c && c <= 'Z')
             {
-                return;
+                c = (char)(c | 0x20u);
             }
 
-            for (var i = 0; i < source.Length; i++)
+            buffer[position + i] = c;
+        }
+
+        buffer[position + source.Length] = ' ';
+        position += source.Length + 1;
+    }
+
+    static bool Prefix(List<BeatmapLevel> levels, string[] searchTerms, ref List<BeatmapLevel> __result)
+    {
+        if (!Config.Instance.Enabled || !Config.Instance.FasterSearch)
+        {
+            return true;
+        }
+
+        for (var i = 0; i < searchTerms.Length; i++)
+        {
+            searchTerms[i] = searchTerms[i].ToLower();
+        }
+
+        List<BeatmapLevel> filteredLevels = new(levels.Count);
+        var buffer = ArrayPool<char>.Shared.Rent(256);
+        try
+        {
+            foreach (BeatmapLevel level in levels)
             {
-                var c = source[i];
-                if ('A' <= c && c <= 'Z')
+                var totalLength = GetTotalLength(level);
+                if (buffer.Length < totalLength)
                 {
-                    c = (char)(c | 0x20u);
+                    ArrayPool<char>.Shared.Return(buffer);
+                    buffer = ArrayPool<char>.Shared.Rent((int)Mathf.Floor((totalLength + 31) / 32) * 32);
                 }
 
-                buffer[position + i] = c;
-            }
+                var pos = 0;
+                CopyLower(level.songName, buffer, ref pos);
+                CopyLower(level.songSubName, buffer, ref pos);
+                CopyLower(level.songAuthorName, buffer, ref pos);
 
-            buffer[position + source.Length] = ' ';
-            position += source.Length + 1;
-        }
+                foreach (var mapper in level.allMappers)
+                    CopyLower(mapper, buffer, ref pos);
 
-        static bool Prefix(List<BeatmapLevel> levels, string[] searchTerms, ref List<BeatmapLevel> __result)
-        {
-            if (!Config.Instance.Enabled || !Config.Instance.FasterSearch)
-            {
-                return true;
-            }
-
-            for (var i = 0; i < searchTerms.Length; i++)
-            {
-                searchTerms[i] = searchTerms[i].ToLower();
-            }
-
-            List<BeatmapLevel> filteredLevels = new(levels.Count);
-            var buffer = ArrayPool<char>.Shared.Rent(256);
-            try
-            {
-                foreach (BeatmapLevel level in levels)
+                var searchSpan = buffer.AsSpan(0, pos);
+                bool match = true;
+                foreach (var term in searchTerms)
                 {
-                    var totalLength = GetTotalLength(level);
-                    if (buffer.Length < totalLength)
+                    if (searchSpan.IndexOf(term.AsSpan()) < 0)
                     {
-                        ArrayPool<char>.Shared.Return(buffer);
-                        buffer = ArrayPool<char>.Shared.Rent((int)Mathf.Floor((totalLength + 31) / 32) * 32);
-                    }
-
-                    var pos = 0;
-                    CopyLower(level.songName, buffer, ref pos);
-                    CopyLower(level.songSubName, buffer, ref pos);
-                    CopyLower(level.songAuthorName, buffer, ref pos);
-
-                    foreach (var mapper in level.allMappers)
-                        CopyLower(mapper, buffer, ref pos);
-
-                    var searchSpan = buffer.AsSpan(0, pos);
-                    bool match = true;
-                    foreach (var term in searchTerms)
-                    {
-                        if (searchSpan.IndexOf(term.AsSpan()) < 0)
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-
-                    if (match)
-                    {
-                        filteredLevels.Add(level);
+                        match = false;
+                        break;
                     }
                 }
-            }
-            finally
-            {
-                ArrayPool<char>.Shared.Return(buffer);
-            }
 
-            __result = filteredLevels;
-            return false;
+                if (match)
+                {
+                    filteredLevels.Add(level);
+                }
+            }
         }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(buffer);
+        }
+
+        __result = filteredLevels;
+        return false;
     }
 }

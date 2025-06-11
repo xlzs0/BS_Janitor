@@ -21,17 +21,16 @@ using IPA.Config.Stores;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
-namespace BS_Janitor
+namespace BS_Janitor;
+
+internal class Config
 {
-    internal class Config
-    {
-        public static Config Instance;
-        public virtual bool Enabled { get; set; } = false;
-        public virtual bool FixNoteStutters { get; set; } = false;
-        public virtual bool FasterSpriteLoading { get; set; } = false;
-        public virtual int MaxCoverSize { get; set; } = 512;
-        public virtual bool SpeedUpBasicDataLoading { get; set; } = false;
-        public virtual bool OffloadAudioPreview { get; set; } = false;
-        public virtual bool FasterSearch { get; set; } = false;
-    }
+    public static Config Instance;
+    public virtual bool Enabled { get; set; } = false;
+    public virtual bool FixNoteStutters { get; set; } = false;
+    public virtual bool FasterSpriteLoading { get; set; } = false;
+    public virtual int MaxCoverSize { get; set; } = 512;
+    public virtual bool SpeedUpBasicDataLoading { get; set; } = false;
+    public virtual bool OffloadAudioPreview { get; set; } = false;
+    public virtual bool FasterSearch { get; set; } = false;
 }

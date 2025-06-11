@@ -21,22 +21,21 @@ using HarmonyLib;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BS_Janitor.HarmonyPatches
-{
-    [HarmonyPatch(typeof(LevelCollectionViewController), nameof(LevelCollectionViewController.SongPlayerCrossfadeToLevel))]
-    internal class LevelCollectionViewControllerPatch
-    {
-        static bool Prefix(LevelCollectionViewController __instance, BeatmapLevel level)
-        {
-            if (!Config.Instance.Enabled || !Config.Instance.OffloadAudioPreview)
-            {
-                return true;
-            }
+namespace BS_Janitor.HarmonyPatches;
 
-            __instance._crossfadeCancellationTokenSource?.Cancel();
-            __instance._crossfadeCancellationTokenSource = new CancellationTokenSource();
-            Task.Run(() => __instance.SongPlayerCrossfadeToLevelAsync(level, __instance._crossfadeCancellationTokenSource.Token));
-            return false;
+[HarmonyPatch(typeof(LevelCollectionViewController), nameof(LevelCollectionViewController.SongPlayerCrossfadeToLevel))]
+internal class LevelCollectionViewControllerPatch
+{
+    static bool Prefix(LevelCollectionViewController __instance, BeatmapLevel level)
+    {
+        if (!Config.Instance.Enabled || !Config.Instance.OffloadAudioPreview)
+        {
+            return true;
         }
+
+        __instance._crossfadeCancellationTokenSource?.Cancel();
+        __instance._crossfadeCancellationTokenSource = new CancellationTokenSource();
+        Task.Run(() => __instance.SongPlayerCrossfadeToLevelAsync(level, __instance._crossfadeCancellationTokenSource.Token));
+        return false;
     }
 }

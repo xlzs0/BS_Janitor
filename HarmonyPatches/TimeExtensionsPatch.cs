@@ -19,26 +19,25 @@
 
 using HarmonyLib;
 
-namespace BS_Janitor.HarmonyPatches
+namespace BS_Janitor.HarmonyPatches;
+
+[HarmonyPatch(typeof(TimeExtensions), nameof(TimeExtensions.MinSecDurationText))]
+internal class TimeExtensionsPatch
 {
-    [HarmonyPatch(typeof(TimeExtensions), nameof(TimeExtensions.MinSecDurationText))]
-    internal class TimeExtensionsPatch
+    static bool Prefix(float duration, ref string __result)
     {
-        static bool Prefix(float duration, ref string __result)
+        if (!float.IsFinite(duration) || float.IsNaN(duration))
         {
-            if (!float.IsFinite(duration) || float.IsNaN(duration))
-            {
-                return true;
-            }
-
-            var hours = duration.Hours();
-            if (hours > 0)
-            {
-                __result = $"{hours}:{duration.Minutes():00}:{$"{duration.Seconds():00}"}";
-                return false;
-            }
-
             return true;
         }
+
+        var hours = duration.Hours();
+        if (hours > 0)
+        {
+            __result = $"{hours}:{duration.Minutes():00}:{$"{duration.Seconds():00}"}";
+            return false;
+        }
+
+        return true;
     }
 }

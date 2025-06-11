@@ -20,39 +20,38 @@
 using HarmonyLib;
 using System;
 
-namespace BS_Janitor.HarmonyPatches
+namespace BS_Janitor.HarmonyPatches;
+
+[HarmonyPatch(typeof(BeatmapSaveDataHelpers), nameof(BeatmapSaveDataHelpers.GetVersion))]
+internal class BeatmapSaveDataHelpersPatch
 {
-    [HarmonyPatch(typeof(BeatmapSaveDataHelpers), nameof(BeatmapSaveDataHelpers.GetVersion))]
-    internal class BeatmapSaveDataHelpersPatch
+    static bool Prefix(ref string data, ref Version __result)
     {
-        static bool Prefix(ref string data, ref Version __result)
+        if (!Config.Instance.Enabled || !Config.Instance.SpeedUpBasicDataLoading)
         {
-            if (!Config.Instance.Enabled || !Config.Instance.SpeedUpBasicDataLoading)
-            {
-                return true;
-            }
-
-            try
-            {
-                var span = data.AsSpan();
-                var versionIndex = span.IndexOf("version");
-                var colonIndex = span[versionIndex..].IndexOf(':') + versionIndex;
-                var startQuoteIndex = span[colonIndex..].IndexOf('"') + colonIndex + 1;
-                var endQuoteIndex = span[startQuoteIndex..].IndexOf('"') + startQuoteIndex;
-
-                if (Version.TryParse(span[startQuoteIndex..endQuoteIndex], out Version parsedVersion))
-                {
-                    __result = parsedVersion;
-                    return false;
-                }
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                return true;
-            }
-
-            __result = BeatmapSaveDataHelpers.noVersion;
-            return false;
+            return true;
         }
+
+        try
+        {
+            var span = data.AsSpan();
+            var versionIndex = span.IndexOf("version");
+            var colonIndex = span[versionIndex..].IndexOf(':') + versionIndex;
+            var startQuoteIndex = span[colonIndex..].IndexOf('"') + colonIndex + 1;
+            var endQuoteIndex = span[startQuoteIndex..].IndexOf('"') + startQuoteIndex;
+
+            if (Version.TryParse(span[startQuoteIndex..endQuoteIndex], out Version parsedVersion))
+            {
+                __result = parsedVersion;
+                return false;
+            }
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return true;
+        }
+
+        __result = BeatmapSaveDataHelpers.noVersion;
+        return false;
     }
 }

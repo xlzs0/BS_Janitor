@@ -20,13 +20,12 @@
 using BS_Janitor.UI;
 using Zenject;
 
-namespace BS_Janitor.Installers
+namespace BS_Janitor.Installers;
+
+internal class MenuInstaller : Installer
 {
-    internal class MenuInstaller : Installer
+    public override void InstallBindings()
     {
-        public override void InstallBindings()
-        {
-            Container.BindInterfacesAndSelfTo<SettingsUI>().AsSingle();
-        }
+        Container.BindInterfacesAndSelfTo<SettingsUI>().AsSingle();
     }
 }

@@ -20,29 +20,28 @@
 using BeatSaberMarkupLanguage.GameplaySetup;
 using Zenject;
 
-namespace BS_Janitor.UI
+namespace BS_Janitor.UI;
+
+internal class SettingsUI : IInitializable
 {
-    internal class SettingsUI : IInitializable
+    private const string _tabName = "Janitor";
+    private const string _resourcePath = "BS_Janitor.UI.Views.Settings.bsml";
+
+    public void Initialize()
     {
-        private const string _tabName = "Janitor";
-        private const string _resourcePath = "BS_Janitor.UI.Views.Settings.bsml";
+        AddTab();
 
-        public void Initialize()
-        {
-            AddTab();
+        Plugin.OnDisabled -= RemoveTab;
+        Plugin.OnDisabled += RemoveTab;
+    }
 
-            Plugin.OnDisabled -= RemoveTab;
-            Plugin.OnDisabled += RemoveTab;
-        }
+    public void AddTab()
+    {
+        GameplaySetup.Instance.AddTab(_tabName, _resourcePath, Config.Instance);
+    }
 
-        public void AddTab()
-        {
-            GameplaySetup.Instance.AddTab(_tabName, _resourcePath, Config.Instance);
-        }
-
-        public void RemoveTab()
-        {
-            GameplaySetup.Instance.RemoveTab(_tabName);
-        }
+    public void RemoveTab()
+    {
+        GameplaySetup.Instance.RemoveTab(_tabName);
     }
 }
