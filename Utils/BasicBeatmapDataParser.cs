@@ -19,15 +19,55 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace BS_Janitor.Utils;
 
 internal static class BasicBeatmapDataParser
 {
-    static public BeatmapDataBasicInfo Parse(string json)
+    private static readonly LRUCache<string, BeatmapDataBasicInfo> _cache = new(120);
+
+    public static async Task<BeatmapDataBasicInfo?> Parse(BeatmapKey beatmapKey, string? json)
     {
-        var output = new Output();
-        if (!parse_basic_data(json, ref output))
+        if (string.IsNullOrEmpty(json))
+        {
+            return null;
+        }
+
+        var cacheKey = beatmapKey.SerializedName() + json.GetHashCode();
+        if (_cache.TryGet(cacheKey, out var cached))
+        {
+            return cached;
+        }
+
+        BeatmapDataBasicInfo? result = ParseImpl(json);
+
+        if (result == null)
+        { 
+            var version = BeatmapSaveDataHelpers.GetVersion(json);            
+            if (version < BeatmapSaveDataHelpers.version3)
+            {
+                result = await BeatmapDataLoaderVersion2_6_0AndEarlier.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(json);
+            }
+            else if (version < BeatmapSaveDataHelpers.version4)
+            {
+                result = await BeatmapDataLoaderVersion3.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(json);
+            }
+            else
+            {
+                result = await BeatmapDataLoaderVersion4.BeatmapDataLoader.GetBeatmapDataBasicInfoFromSaveDataJsonAsync(json);
+            }
+        }
+
+        _cache.Add(cacheKey, result);
+        return result;
+    }
+
+    private static BeatmapDataBasicInfo? ParseImpl(string str)
+    {
+        Output output = new();
+
+        if (!parse_basic_data(str, ref output))
         {
             return null;
         }
@@ -45,6 +85,5 @@ internal static class BasicBeatmapDataParser
     }
 
     [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool parse_basic_data([MarshalAs(UnmanagedType.LPStr)] string json, ref Output output);
 }
