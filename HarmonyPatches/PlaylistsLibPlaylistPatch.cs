@@ -9,6 +9,8 @@ namespace BS_Janitor.HarmonyPatches;
 [HarmonyPatch(typeof(Playlist), "QueueLoadSprite")]
 internal class PlaylistsLibPlaylistPatch
 {
+    internal static bool Prepare() => IPA.Loader.PluginManager.GetPlugin("BeatSaberPlaylistsLib") != null;
+
     private static async Task QueueLoadSprite(Playlist playlist)
     {
         using var stream = playlist.HasCover ? playlist.GetCoverStream() : null;

@@ -25,12 +25,18 @@
     <Reference Include="MediaLoader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\MediaLoader.dll" Publicize="True" />
     <Reference Include="Main" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll" Publicize="True" />
     <Reference Include="HMUI" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\HMUI.dll" />
+    <Reference Include="HMLib" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\HMLib.dll" />
     <Reference Include="IPA.Loader" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll" />
     <Reference Include="Tweening" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Tweening.dll" />
+    <Reference Include="Unity.ResourceManager" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.ResourceManager.dll" />
     <Reference Include="UnityEngine" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.dll" />
     <Reference Include="UnityEngine.AudioModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.AudioModule.dll" />
+    <Reference Include="UnityEngine.AssetBundleModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.AssetBundleModule.dll" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll" Publicize="True" />
     <Reference Include="UnityEngine.UIModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UIModule.dll" />
+    <Reference Include="UnityEngine.UnityWebRequestModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestModule.dll" />
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll" />
+    <Reference Include="UnityEngine.XRModule" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.XRModule.dll" />
     <Reference Include="Zenject" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll" />
     <Reference Include="Zenject-usage" HintPath="$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll" />
   </ItemGroup>

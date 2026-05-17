@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -58,26 +58,27 @@ internal static class BasicBeatmapDataParser
     {
         Output output = new();
 
-        if (fromFile && !parse_basic_data_from_file(str, ref output) || !fromFile && !parse_basic_data(str, ref output))
+        if (fromFile && !ParseBasicDataFromFile_Injected(str, ref output) || !fromFile && !ParseBasicData_Injected(str, ref output))
         {
             return null;
         }
 
-        return new(4, (int)output.CuttableNotes, (int)output.CuttableObjects, (int)output.Obstacles, (int)output.Bombs);
+        return new(4, output.CuttableNotes, output.CuttableObjects, output.Obstacles, output.Bombs);
     }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Output
     {
-        public UInt64 CuttableNotes;
-        public UInt64 CuttableObjects;
-        public UInt64 Obstacles;
-        public UInt64 Bombs;
+        public int CuttableNotes;
+        public int CuttableObjects;
+        public int Obstacles;
+        public int Bombs;
     }
 
-    [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
-    private static extern bool parse_basic_data([MarshalAs(UnmanagedType.LPStr)] string json, ref Output output);
+    [MethodImpl(MethodImplOptions.InternalCall)]
+    private static extern bool ParseBasicData_Injected(string json, ref Output output);
 
-    [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
-    private static extern bool parse_basic_data_from_file([MarshalAs(UnmanagedType.LPWStr)] string path, ref Output output);
+    [MethodImpl(MethodImplOptions.InternalCall)]
+    private static extern bool ParseBasicDataFromFile_Injected(string path, ref Output output);
+
 }

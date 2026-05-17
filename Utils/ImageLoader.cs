@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -7,25 +7,25 @@ namespace BS_Janitor.Utils;
 
 internal static class ImageLoader
 {
-    internal static async Task<Texture2D> Load(string path, uint maxSize = 0)
+    internal static async Task<Texture2D?> Load(string path, int maxSize = -1)
     {
         IntPtr ptr = IntPtr.Zero;
 
         try
         {
-            UInt64 channels = 0, width = 0, height = 0;
+            int width = 0, height = 0, channels = 0;
 
-            ptr = await Task.Run(() => load_image(path, ref channels, ref width, ref height, maxSize));
+            ptr = await Task.Run(() => LoadImage_Injected(path, ref width, ref height, ref channels, maxSize));
             if (ptr == IntPtr.Zero)
             {
-                return new(2, 2);
+                return null;
             }
 
-            Texture2D texture = new((int)width, (int)height, TextureFormat.RGBA32, mipChain: true)
+            Texture2D texture = new(width, height, channels == 3 ? TextureFormat.RGB24 : TextureFormat.RGBA32, mipChain: true, linear: false, createUninitialized: true)
             {
                 hideFlags = HideFlags.DontSave
             };
-            texture.SetPixelDataImpl(ptr, 0, 1, (int)(width * height * channels));
+            texture.SetPixelDataImpl(ptr, 0, 1, width * height * channels);
             texture.Apply(updateMipmaps: true, makeNoLongerReadable: true);
 
             return texture;
@@ -35,21 +35,15 @@ internal static class ImageLoader
         }
         finally
         {
-            if (ptr != IntPtr.Zero)
-            {
-                unsafe
-                {
-                    mem_free((void*)ptr);
-                }
-            }
+            Free_Injected(ptr);
         }
 
-        return new(2, 2);
+        return null;
     }
 
-    [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
-    private static unsafe extern IntPtr load_image([MarshalAs(UnmanagedType.LPWStr)] string path, ref UInt64 channels, ref UInt64 width, ref UInt64 height, UInt64 max_size);
+    [MethodImpl(MethodImplOptions.InternalCall)]
+    private static extern IntPtr LoadImage_Injected(string path, ref int width, ref int height, ref int channels, int max_size);
 
-    [DllImport("Libs/bs_janitor.dll", CallingConvention = CallingConvention.Cdecl)]
-    private static unsafe extern void mem_free(void* ptr);
+    [MethodImpl(MethodImplOptions.InternalCall)]
+    private static extern void Free_Injected(IntPtr ptr);
 }

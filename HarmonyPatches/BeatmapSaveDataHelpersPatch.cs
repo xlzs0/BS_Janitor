@@ -17,9 +17,9 @@ internal class BeatmapSaveDataHelpersPatch
             var startQuoteIndex = span[colonIndex..].IndexOf('"') + colonIndex + 1;
             var endQuoteIndex = span[startQuoteIndex..].IndexOf('"') + startQuoteIndex;
 
-            if (Version.TryParse(span[startQuoteIndex..endQuoteIndex], out Version parsedVersion))
+            if (Version.TryParse(span[startQuoteIndex..endQuoteIndex], out var version))
             {
-                __result = parsedVersion;
+                __result = version;
                 return false;
             }
         }
@@ -32,7 +32,6 @@ internal class BeatmapSaveDataHelpersPatch
         return false;
     }
 }
-
 
 [HarmonyPatch(typeof(BeatmapSaveDataHelpers), nameof(BeatmapSaveDataHelpers.GetVersionAsync))]
 internal class BeatmapSaveDataHelpersNoAsyncPatch

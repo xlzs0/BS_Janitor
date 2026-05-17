@@ -11,6 +11,8 @@ namespace BS_Janitor.HarmonyPatches;
 [HarmonyPatch(typeof(StandardLevelDetailView), nameof(StandardLevelDetailView.CalculateAndSetContent))]
 internal class StandardLevelDetailViewPatch
 {
+    internal static bool Prepare() => Plugin.NativeLibLoaded;
+
     private static async void InvokeSafe<A, B>(Func<A, B, Task> task, A a, B b)
     {
         try
@@ -21,6 +23,21 @@ internal class StandardLevelDetailViewPatch
         {
             Debug.LogException(exception);
         }
+    }
+
+    private static async Task<BeatmapDataBasicInfo?> GetBasicInfo(IBeatmapLevelData beatmapLevelData, BeatmapKey beatmapKey)
+    {
+        if (beatmapLevelData is FileSystemBeatmapLevelData fsLevelData)
+        {
+            var result = await Task.Run(() => BasicBeatmapDataParser.ParseFromFile(fsLevelData.GetDifficultyBeatmap(beatmapKey)?._beatmapPath));
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        var json = beatmapLevelData.GetBeatmapString(beatmapKey);
+        return await Task.Run(() => BasicBeatmapDataParser.Parse(beatmapKey, json));
     }
 
     private static async Task CalculateAndSetContentAsync(StandardLevelDetailView __instance, CancellationToken cancellationToken)
@@ -49,19 +66,7 @@ internal class StandardLevelDetailViewPatch
             return;
         }
 
-        var beatmapDataBasicInfo = await Task.Run(async () => {
-            if (beatmapLevelData.beatmapLevelData is FileSystemBeatmapLevelData fsLevelData)
-            {
-                var result = BasicBeatmapDataParser.ParseFromFile(fsLevelData.GetDifficultyBeatmap(beatmapKey)?._beatmapPath);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return await BasicBeatmapDataParser.Parse(beatmapKey, beatmapLevelData.beatmapLevelData.GetBeatmapString(beatmapKey));
-        });
-
+        var beatmapDataBasicInfo = await GetBasicInfo(beatmapLevelData.beatmapLevelData, beatmapKey);
         if (beatmapDataBasicInfo == null || cancellationToken.IsCancellationRequested)
         {
             return;

@@ -7,7 +7,7 @@ internal class TimeExtensionsPatch
 {
     internal static bool Prefix(float duration, ref string __result)
     {
-        if (!float.IsFinite(duration) || float.IsNaN(duration))
+        if (!float.IsFinite(duration))
         {
             return true;
         }
